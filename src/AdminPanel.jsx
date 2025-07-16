@@ -8,8 +8,6 @@ import HireUsPage from './HireUsPage';
 import { workerAPI } from './services/api';
 // import { useNavigate } from 'react-router-dom';
 
-const BACKEND_URL = 'https://gokrixo.onrender.com';
-
 const AdminPanel = () => {
   const [activeTab, setActiveTab] = useState('commands');
   const [commands, setCommands] = useState([]);
