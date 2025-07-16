@@ -1,4 +1,5 @@
 import { handleApiError } from '../utils/errorHandler';
+import { currentConfig } from '../config/backend';
     
 // Helper to get auth token
 const getAuthToken = () => localStorage.getItem('authToken');
@@ -12,6 +13,11 @@ const buildHeaders = (extra = {}) => {
   const token = getAuthToken();
   if (token) headers['Authorization'] = `Bearer ${token}`;
   return headers;
+};
+
+// Helper to build full API URL
+const buildApiUrl = (endpoint) => {
+  return `${currentConfig.baseURL}${endpoint}`;
 };
 
 // Command API functions
@@ -31,7 +37,7 @@ export const commandAPI = {
         prise: commandData.price.toString(),
         isaccepted: "false"
       };
-      const res = await fetch(`/api/CreateCommand`, {
+      const res = await fetch(buildApiUrl('/CreateCommand'), {
         method: 'POST',
         headers: buildHeaders(),
         body: JSON.stringify(backendData),
@@ -47,7 +53,7 @@ export const commandAPI = {
   // Get all commands using the configured base URL
   getCommands: async () => {
     try {
-      const res = await fetch(`/api/GetCommands`, {
+      const res = await fetch(buildApiUrl('/GetCommands'), {
         method: 'GET',
         headers: buildHeaders(),
       });
@@ -75,7 +81,7 @@ export const commandAPI = {
   // Get all commands using the specific URL
   getCommandsDirect: async () => {
     try {
-      const res = await fetch('/api/GetCommands', {
+      const res = await fetch(buildApiUrl('/GetCommands'), {
         method: 'GET',
         headers: buildHeaders(),
       });
@@ -103,7 +109,7 @@ export const commandAPI = {
   // Update command status (approve/reject)
   updateCommandStatus: async (commandId, status) => {
     try {
-      const res = await fetch(`/api/commands/${commandId}/status`, {
+      const res = await fetch(buildApiUrl(`/commands/${commandId}/status`), {
         method: 'PUT',
         headers: buildHeaders(),
         body: JSON.stringify({ status }),
@@ -119,7 +125,7 @@ export const commandAPI = {
   // Delete command
   deleteCommand: async (commandId) => {
     try {
-      const res = await fetch(`/api/commands/${commandId}`, {
+      const res = await fetch(buildApiUrl(`/commands/${commandId}`), {
         method: 'DELETE',
         headers: buildHeaders(),
       });
@@ -133,7 +139,7 @@ export const commandAPI = {
 
   // Update command using fetch (matches working HTML example)
   updateCommand: async (commandData) => {
-    const res = await fetch(`/api/UpdateCommand`, {
+    const res = await fetch(buildApiUrl('/UpdateCommand'), {
       method: 'PUT',
       headers: buildHeaders(),
       body: JSON.stringify({
@@ -170,7 +176,7 @@ export const workerAPI = {
     };
     const jsonBody = JSON.stringify(backendData);
     
-    const res = await fetch(`/api/CreateWorker`, {
+    const res = await fetch(buildApiUrl('/CreateWorker'), {
       method: 'POST',
       headers: buildHeaders(),
       body: jsonBody,
@@ -202,7 +208,7 @@ export const workerAPI = {
   // Get all workers using the configured base URL
   getWorkers: async () => {
     try {
-      const res = await fetch(`/api/GetWorkers`, {
+      const res = await fetch(buildApiUrl('/GetWorkers'), {
         method: 'GET',
         headers: buildHeaders(),
       });
@@ -217,7 +223,7 @@ export const workerAPI = {
   // Get all workers using the specific URL
   getWorkersDirect: async () => {
     try {
-      const res = await fetch('/api/GetWorkers', {
+      const res = await fetch(buildApiUrl('/GetWorkers'), {
         method: 'GET',
         headers: buildHeaders(),
       });
@@ -257,7 +263,7 @@ export const workerAPI = {
     try {
       const data = { status };
       if (password) data.password = password;
-      const res = await fetch(`/api/workers/${workerId}/status`, {
+      const res = await fetch(buildApiUrl(`/workers/${workerId}/status`), {
         method: 'PUT',
         headers: buildHeaders(),
         body: JSON.stringify(data),
@@ -273,7 +279,7 @@ export const workerAPI = {
   // Delete worker
   deleteWorker: async (workerId) => {
     try {
-      const res = await fetch(`/api/workers/${workerId}`, {
+      const res = await fetch(buildApiUrl(`/workers/${workerId}`), {
         method: 'DELETE',
         headers: buildHeaders(),
       });
@@ -298,7 +304,7 @@ export const workerAPI = {
       message: workerData.message,
       isaccepted: workerData.isaccepted
     };
-    const res = await fetch(`/api/UpdateWorker`, {
+    const res = await fetch(buildApiUrl('/UpdateWorker'), {
       method: 'PUT',
       headers: buildHeaders(),
       body: JSON.stringify(updateData),
@@ -309,7 +315,7 @@ export const workerAPI = {
 
   // Get a single worker by ID using fetch (not axios)
   getWorkerById: async (workerId) => {
-    const res = await fetch(`/api/worker/${workerId}`, {
+    const res = await fetch(buildApiUrl(`/worker/${workerId}`), {
       method: 'GET',
       headers: buildHeaders(),
     });
@@ -320,7 +326,7 @@ export const workerAPI = {
   // Authenticate worker by email (no password check)
   authenticateWorker: async (email) => {
     // Get all workers
-    const res = await fetch('/api/GetWorkers', {
+    const res = await fetch(buildApiUrl('/GetWorkers'), {
       method: 'GET',
       headers: buildHeaders(),
     });
@@ -338,19 +344,15 @@ export const workerAPI = {
 
   // Check if worker with email already exists
   checkWorkerExists: async (email) => {
-    const res = await fetch('/api/GetWorkers', {
+    const res = await fetch(buildApiUrl('/GetWorkers'), {
       method: 'GET',
       headers: buildHeaders(),
     });
     if (!res.ok) throw new Error(await res.text());
     const workers = await res.json();
-    const existingWorker = Array.isArray(workers) 
-      ? workers.find(w => w.email === email || w.email?.toLowerCase() === email.toLowerCase())
-      : null;
-    return {
-      exists: !!existingWorker,
-      worker: existingWorker
-    };
+    return Array.isArray(workers) 
+      ? workers.some(w => w.email === email || w.email?.toLowerCase() === email.toLowerCase())
+      : false;
   }
 };
 
@@ -358,7 +360,7 @@ export const workerAPI = {
 export const authAPI = {
   // User registration using fetch (matches working HTML example)
   register: async (userData) => {
-    const res = await fetch(`/api/Regestration`, {
+    const res = await fetch(buildApiUrl('/Regestration'), {
       method: 'POST',
       headers: buildHeaders(),
       body: JSON.stringify(userData),
@@ -370,7 +372,7 @@ export const authAPI = {
   // Get account by ID
   getAccount: async (accountId) => {
     try {
-      const res = await fetch(`/api/account/${accountId}`, {
+      const res = await fetch(buildApiUrl(`/account/${accountId}`), {
         method: 'GET',
         headers: buildHeaders(),
       });
@@ -385,7 +387,7 @@ export const authAPI = {
   // Login (if you have a login endpoint)
   login: async (credentials) => {
     try {
-      const res = await fetch(`/api/Regestration`, {
+      const res = await fetch(buildApiUrl('/Regestration'), {
         method: 'POST',
         headers: buildHeaders(),
         body: JSON.stringify(credentials),
@@ -423,7 +425,7 @@ export const testAPI = {
   // Test if backend is reachable
   testConnection: async () => {
     try {
-      const res = await fetch(`/api/health`, {
+      const res = await fetch(buildApiUrl('/health'), {
         method: 'GET',
         headers: buildHeaders(),
       });
@@ -442,12 +444,12 @@ export const testAPI = {
     try {
       let res;
       if (method === 'GET') {
-        res = await fetch(`/api${endpoint}`, {
+        res = await fetch(buildApiUrl(endpoint), {
           method: 'GET',
           headers: buildHeaders(),
         });
       } else if (method === 'POST') {
-        res = await fetch(`/api${endpoint}`, {
+        res = await fetch(buildApiUrl(endpoint), {
           method: 'POST',
           headers: buildHeaders(),
           body: JSON.stringify(data),
