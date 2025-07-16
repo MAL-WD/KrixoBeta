@@ -8,6 +8,8 @@ const getAuthToken = () => localStorage.getItem('authToken');
 const buildHeaders = (extra = {}) => {
   const headers = {
     'Content-Type': 'application/json',
+    'Accept': 'application/json',
+    'Origin': window.location.origin,
     ...extra,
   };
   const token = getAuthToken();
@@ -15,9 +17,47 @@ const buildHeaders = (extra = {}) => {
   return headers;
 };
 
+// Helper to check if we're in development
+const isDevelopment = () => {
+  return window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+};
+
 // Helper to build full API URL
 const buildApiUrl = (endpoint) => {
-  return `${currentConfig.baseURL}${endpoint}`;
+  // In development, use the Vite proxy (/api prefix)
+  // In production, use the full backend URL
+  const dev = isDevelopment();
+  
+  let fullUrl;
+  if (dev) {
+    // Use Vite proxy in development
+    fullUrl = `/api${endpoint}`;
+  } else {
+    // Use full backend URL in production
+    fullUrl = `${currentConfig.baseURL}${endpoint}`;
+  }
+  
+  console.log('🔍 Environment:', dev ? 'development' : 'production');
+  console.log('🔍 API URL being called:', fullUrl);
+  console.log('🔍 Current config:', currentConfig);
+  return fullUrl;
+};
+
+// Helper to get fetch options based on environment
+const getFetchOptions = (method = 'GET', body = null) => {
+  const dev = isDevelopment();
+  const options = {
+    method,
+    headers: buildHeaders(),
+    mode: dev ? 'same-origin' : 'cors',
+    credentials: dev ? 'include' : 'omit',
+  };
+  
+  if (body) {
+    options.body = JSON.stringify(body);
+  }
+  
+  return options;
 };
 
 // Command API functions
@@ -37,11 +77,7 @@ export const commandAPI = {
         prise: commandData.price.toString(),
         isaccepted: "false"
       };
-      const res = await fetch(buildApiUrl('/CreateCommand'), {
-        method: 'POST',
-        headers: buildHeaders(),
-        body: JSON.stringify(backendData),
-      });
+      const res = await fetch(buildApiUrl('/CreateCommand'), getFetchOptions('POST', backendData));
       if (!res.ok) throw new Error(await res.text());
       return res.json();
     } catch (error) {
@@ -53,12 +89,24 @@ export const commandAPI = {
   // Get all commands using the configured base URL
   getCommands: async () => {
     try {
-      const res = await fetch(buildApiUrl('/GetCommands'), {
-        method: 'GET',
-        headers: buildHeaders(),
-      });
-      if (!res.ok) throw new Error(await res.text());
+      console.log('🔍 Attempting to fetch commands...');
+      const url = buildApiUrl('/GetCommands');
+      console.log('🔍 Full URL:', url);
+      
+      const res = await fetch(url, getFetchOptions('GET'));
+      
+      console.log('🔍 Response status:', res.status);
+      console.log('🔍 Response headers:', Object.fromEntries(res.headers.entries()));
+      
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.log('🔍 Error response text:', errorText);
+        throw new Error(errorText);
+      }
+      
       const data = await res.json();
+      console.log('🔍 Successfully fetched commands:', data);
+      
       if (Array.isArray(data)) {
         data.forEach((command, index) => {
           console.log(`  Command ${index + 1}:`, {
@@ -73,6 +121,12 @@ export const commandAPI = {
       }
       return data;
     } catch (error) {
+      console.log('🔍 Error in getCommands:', error);
+      console.log('🔍 Error details:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      });
       const userMessage = handleApiError(error, 'GetCommands');
       throw new Error(userMessage);
     }
@@ -81,10 +135,8 @@ export const commandAPI = {
   // Get all commands using the specific URL
   getCommandsDirect: async () => {
     try {
-      const res = await fetch(buildApiUrl('/GetCommands'), {
-        method: 'GET',
-        headers: buildHeaders(),
-      });
+      const url = buildApiUrl('/GetCommands');
+      const res = await fetch(url, getFetchOptions('GET'));
       if (!res.ok) throw new Error(await res.text());
       const data = await res.json();
       if (Array.isArray(data)) {
@@ -139,14 +191,10 @@ export const commandAPI = {
 
   // Update command using fetch (matches working HTML example)
   updateCommand: async (commandData) => {
-    const res = await fetch(buildApiUrl('/UpdateCommand'), {
-      method: 'PUT',
-      headers: buildHeaders(),
-      body: JSON.stringify({
-        ...commandData,
-        isaccepted: typeof commandData.isaccepted === 'string' ? commandData.isaccepted : 'false',
-      }),
-    });
+    const res = await fetch(buildApiUrl('/UpdateCommand'), getFetchOptions('PUT', {
+      ...commandData,
+      isaccepted: typeof commandData.isaccepted === 'string' ? commandData.isaccepted : 'false',
+    }));
     if (!res.ok) throw new Error(await res.text());
     const text = await res.text();
     if (!text || text.trim() === '') {

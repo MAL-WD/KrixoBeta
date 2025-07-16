@@ -6,6 +6,7 @@ import { commandAPI } from './services/api';
 import { Route } from 'react-router-dom';
 import HireUsPage from './HireUsPage';
 import { workerAPI } from './services/api';
+import { testBackendConnection } from './config/backend';
 // import { useNavigate } from 'react-router-dom';
 
 const AdminPanel = () => {
@@ -48,6 +49,11 @@ const AdminPanel = () => {
   const  fetchData = async () => {
     setInitialLoading(true);
     try {
+      
+      // Test backend connection first
+      console.log('🔍 Testing backend connection...');
+      const connectionTest = await testBackendConnection();
+      console.log('🔍 Connection test result:', connectionTest);
       
       // Fetch commands using the direct API call
       

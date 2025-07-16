@@ -1,13 +1,13 @@
 // Backend Configuration
 // Update this URL to match your backend server address
 export const BACKEND_CONFIG = {
-  // Development
+  // Development - Use Vite proxy
   development: {
-    baseURL: 'https://gokrixo.onrender.com',
+    baseURL: '', // Empty for Vite proxy to work
     timeout: 10000,
   },
   
-  // Production
+  // Production - Use full backend URL
   production: {
     baseURL: 'https://gokrixo.onrender.com',
     timeout: 10000,
@@ -22,13 +22,67 @@ export const BACKEND_CONFIG = {
 
 // Get current environment - simplified for browser compatibility
 const getEnvironment = () => {
-  // For now, always use development config in browser
-  // You can manually change this if needed
+  // Check if we're in production (deployed)
+  if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+    return 'production';
+  }
   return 'development';
 };
 
 // Export current config
 export const currentConfig = BACKEND_CONFIG[getEnvironment()];
+
+// Test backend connectivity
+export const testBackendConnection = async () => {
+  try {
+    // Determine the test URL based on environment
+    const isDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const testUrl = isDevelopment ? '/api/GetCommands' : `${currentConfig.baseURL}/GetCommands`;
+    
+    console.log('🔍 Testing backend connection to:', testUrl);
+    console.log('🔍 Environment:', isDevelopment ? 'development' : 'production');
+    
+    // Test with a simple GET request
+    const response = await fetch(testUrl, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Origin': window.location.origin,
+      },
+      mode: isDevelopment ? 'same-origin' : 'cors', // Use same-origin for development
+    });
+    
+    console.log('🔍 Backend test response status:', response.status);
+    console.log('🔍 Backend test response headers:', Object.fromEntries(response.headers.entries()));
+    
+    if (response.ok) {
+      const data = await response.text();
+      console.log('🔍 Backend test successful, response length:', data.length);
+      return { success: true, status: response.status };
+    } else {
+      const errorText = await response.text();
+      console.log('🔍 Backend test failed:', errorText);
+      return { success: false, status: response.status, error: errorText };
+    }
+  } catch (error) {
+    console.log('🔍 Backend test error:', error);
+    console.log('🔍 Error type:', error.name);
+    console.log('🔍 Error message:', error.message);
+    
+    // Check if it's a CORS error
+    if (error.message.includes('Failed to fetch') || error.name === 'TypeError') {
+      console.log('🔍 This appears to be a CORS issue');
+      return { 
+        success: false, 
+        error: 'CORS Error: Backend is not allowing requests from this origin. Check CORS configuration.',
+        details: error.message 
+      };
+    }
+    
+    return { success: false, error: error.message };
+  }
+};
 
 // API Endpoints
 export const API_ENDPOINTS = {
