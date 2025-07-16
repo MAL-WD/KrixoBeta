@@ -13,57 +13,58 @@ const Header = () => {
     return (
         <>
             {/* Main Header */}
-            <div className="flex z-50 fixed top-4 sm:top-6 md:top-8 left-0 right-0 mx-auto min-h-16 sm:min-h-18 md:min-h-20 bg-white/8 text-black rounded-full shadow w-[90%] sm:w-[85%] md:w-[80%] lg:w-[75%] max-w-6xl justify-between items-center py-1 sm:py-1.5 md:py-2 px-3 sm:px-4 md:px-6 bg-opacity-50 backdrop-blur-2xl shadow-md overflow-x-hidden">
-                
-                {/* Logo */}
-                <div className="logo font-bold flex-shrink-0">
-                    <img className='w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 lg:w-20 lg:h-20' src={logo} alt="Logo" />
-                </div>
-                
-                {/* Desktop Navigation - Hidden on tablet and mobile */}
-                <nav className="hidden lg:flex gap-4 xl:gap-8 text-white font-semibold text-base xl:text-lg">
-                    <ul className="flex gap-4 xl:gap-8">
-                        <li><a href="/#Home" className="hover:text-yellow transition-colors">الرئيسية</a></li>
-                        <li><a href="/#About" className="hover:text-yellow transition-colors">من نحن</a></li>
-                        <li><a href="/#Services" className="hover:text-yellow transition-colors">خدماتنا</a></li>
-                        <li><a href="/#Testimonials" className="hover:text-yellow transition-colors">شهادات</a></li>
-                        <li><a href="/#Contact" className="hover:text-yellow transition-colors">اتصل بنا</a></li>
-                    </ul>
-                </nav>
-                
-                {/* Desktop CTA Button - Hidden on tablet and mobile */}
-                <div className="flex items-center gap-2 hidden lg:flex">
-                    <Link to={'/contact'} className="forms flex-shrink-0">
-                        <button 
-                            style={{fontWeight:'600'}} 
-                            className="border bg-yellow cursor-pointer text-blue px-4 xl:px-8 py-2 xl:py-4.5 rounded-full text-sm xl:text-xl font-bold hover:bg-yellow/90 transition-colors whitespace-nowrap"
-                        > 
-                            اطلب الخدمة 
+            <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 w-[95%] max-w-6xl bg-white/8 backdrop-blur-2xl rounded-full shadow-lg border border-white/20">
+                <div className="flex justify-between items-center py-2 px-4 sm:px-6 md:px-8">
+                    
+                    {/* Logo */}
+                    <div className="flex-shrink-0">
+                        <img className='w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 lg:w-20 lg:h-20' src={logo} alt="Logo" />
+                    </div>
+                    
+                    {/* Desktop Navigation - Hidden on tablet and mobile */}
+                    <nav className="hidden lg:flex gap-4 xl:gap-8 text-white font-semibold text-base xl:text-lg">
+                        <ul className="flex gap-4 xl:gap-8">
+                            <li><a href="/#Home" className="hover:text-yellow transition-colors">الرئيسية</a></li>
+                            <li><a href="/#About" className="hover:text-yellow transition-colors">من نحن</a></li>
+                            <li><a href="/#Services" className="hover:text-yellow transition-colors">خدماتنا</a></li>
+                            <li><a href="/#Testimonials" className="hover:text-yellow transition-colors">شهادات</a></li>
+                            <li><a href="/#Contact" className="hover:text-yellow transition-colors">اتصل بنا</a></li>
+                        </ul>
+                    </nav>
+                    
+                    {/* Desktop CTA Button - Hidden on tablet and mobile */}
+                    <div className="flex items-center gap-2 hidden lg:flex">
+                        <Link to={'/contact'} className="flex-shrink-0">
+                            <button 
+                                style={{fontWeight:'600'}} 
+                                className="border bg-yellow cursor-pointer text-blue px-4 xl:px-8 py-2 xl:py-4.5 rounded-full text-sm xl:text-xl font-bold hover:bg-yellow/90 transition-colors whitespace-nowrap"
+                            > 
+                                اطلب الخدمة 
+                            </button>
+                        </Link>
+                        <Link to={'/login'} className="flex-shrink-0">
+                            <button 
+                                style={{fontWeight:'600'}} 
+                                className="border border-blue-700 bg-white text-blue-700 px-4 xl:px-8 py-2 xl:py-4.5 rounded-full text-sm xl:text-xl font-bold hover:bg-blue-50 hover:scale-105 hover:shadow-lg transition-all duration-200 whitespace-nowrap cursor-pointer"
+                            > 
+                                تسجيل الدخول
+                            </button>
+                        </Link>
+                    </div>
+                    
+                    {/* Mobile Menu Button - Visible on tablet and mobile */}
+                    <div className="lg:hidden flex-shrink-0">
+                        <button onClick={toggleMenu} className="p-2">
+                            {isOpen ? <FaTimes color='white' size={20} /> : <FaBars size={20} color='white'/>}
                         </button>
-                    </Link>
-                    <Link to={'/login'} className="flex-shrink-0">
-                        <button 
-                            style={{fontWeight:'600'}} 
-                            className="border border-blue-700 bg-white text-blue-700 px-4 xl:px-8 py-2 xl:py-4.5 rounded-full text-sm xl:text-xl font-bold hover:bg-blue-50 hover:scale-105 hover:shadow-lg transition-all duration-200 whitespace-nowrap cursor-pointer"
-                        > 
-                            تسجيل الدخول
-                        </button>
-                    </Link>
-                </div>
-                {/* <span className="hidden lg:block text-xs text-blue-900 font-medium ml-2">خاص فقط للإدارة أو من يريد الانضمام كعامل</span> */}
-                
-                {/* Mobile Menu Button - Visible on tablet and mobile */}
-                <div className="lg:hidden flex-shrink-0">
-                    <button onClick={toggleMenu} className="p-2">
-                        {isOpen ? <FaTimes color='white' size={20} /> : <FaBars size={20} color='white'/>}
-                    </button>
+                    </div>
                 </div>
             </div>
 
             {/* Mobile Menu Dropdown */}
             {isOpen && (
                 <div 
-                    className="lg:hidden flex top-20 sm:top-24 md:top-28 flex-col items-center bg-white/10 rounded-xl shadow bg-opacity-50 backdrop-blur-2xl w-[90%] sm:w-[85%] md:w-[80%] max-w-md left-0 right-0 mx-auto py-4 px-4 fixed z-40 transition-all duration-300 ease-in-out"
+                    className="lg:hidden fixed top-20 sm:top-24 md:top-28 left-1/2 transform -translate-x-1/2 z-40 w-[95%] max-w-md bg-white/10 backdrop-blur-2xl rounded-xl shadow-lg border border-white/20 py-4 px-4"
                 >
                     <nav className="flex flex-col gap-4 font-semibold text-base sm:text-lg w-full">
                         <ul className="flex flex-col gap-4 items-center text-white w-full">
